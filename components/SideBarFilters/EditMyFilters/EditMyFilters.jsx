@@ -1,3 +1,7 @@
+/* global
+  fetch
+*/
+
 /**
  * Sidebar content in the Edit My Filters mode. Implemented as a stateful component,
  * so that it controls reordering of filters by dragging on its own, using its
@@ -10,6 +14,7 @@ import React, { PropTypes as PT } from 'react';
 import { ActiveFilterItem } from '../FilterItems';
 import './EditMyFilters.scss';
 
+export const SAVE_FILTERS_API = 'https://lc1-user-settings-service.herokuapp.com/saved-searches';
 const MAX_FILTER_NAME_LENGTH = 35;
 
 class EditMyFilters extends React.Component {
@@ -87,6 +92,14 @@ class EditMyFilters extends React.Component {
           this.setState({ filters: newFilters });
         }}
         onRemove={() => {
+          const filterToRemove = this.state.filters[index].filter;
+          fetch(`${SAVE_FILTERS_API}/${filterToRemove.uuid}`, {
+            headers: {
+              Authorization: `Bearer ${this.props.token}`,
+              'Content-Type': 'application/json',
+            },
+            method: 'DELETE',
+          });
           const newFilters = _.clone(this.state.filters);
           newFilters.splice(index, 1);
           this.setState({ filters: newFilters });
@@ -95,12 +108,16 @@ class EditMyFilters extends React.Component {
     ));
     return (
       <div className="EditMyFilters">
-        <h1>My filters</h1>
-        <div id="done-button" onClick={() => this.onDone()}>Done</div>
+        <h1>
+          My filters
+        </h1>
+        <div id="done-button" onClick={() => this.onDone()}>
+          Done
+        </div>
         {filters}
         <div id="note">
           Drag the filters to set the order you prefer;
-          use the "x" mark to delete the filter(s) you don't need.
+          use the &quot;x&quot; mark to delete the filter(s) you don&apos;t need.
         </div>
       </div>
     );
@@ -109,10 +126,13 @@ class EditMyFilters extends React.Component {
 
 EditMyFilters.defaultProps = {
   onDone: _.noop,
+  token: '',
 };
 
 EditMyFilters.propTypes = {
   filters: PT.arrayOf(PT.shape({})).isRequired,
+  onDone: PT.func,
+  token: PT.string,
 };
 
 export default EditMyFilters;

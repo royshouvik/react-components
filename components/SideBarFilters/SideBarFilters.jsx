@@ -1,3 +1,7 @@
+/* global
+  document, fetch, window
+*/
+
 /**
  * Sidebar Filters Component (for an additional filtering of the challenge listing).
  *
@@ -14,20 +18,12 @@
  */
 
 import _ from 'lodash';
+import uuid from 'uuid/v4';
 import React, { PropTypes as PT } from 'react';
-import EditMyFilters from './EditMyFilters';
+import EditMyFilters, { SAVE_FILTERS_API } from './EditMyFilters';
 import SideBarFilter, { MODE } from './SideBarFilter';
 import { FilterItem } from './FilterItems';
 import './SideBarFilters.scss';
-
-const V2_API = 'https://api.topcoder-dev.com/v2';
-const CHALLENGES_API = `${V2_API}/challenges/`;
-const MY_CHALLENGES_API = `${V2_API}/user/challenges?challengeType=Copilot+Posting,
-  Conceptualization,Specification,Architecture,Design,Development,
-  RIA+Build+Competition,UI+Prototype+Competition,Assembly+Competition,
-  Test+Suites,Test+Scenarios,Content+Creation,Marathon+Match,Bug+Hunt,
-  First2Finish,Code&type=active`
-const RSS_LINK = 'http://feeds.topcoder.com/challenges/feed?list=active&contestType=all';
 
 /*
  * Default set of filters displayed in the component.
@@ -70,29 +66,24 @@ const MODES = {
  * that all other such indices in the similar filter names.
  */
 const MY_FILTER_BASE_NAME = 'My Filter';
+const TOKEN_KEY = 'tcjwt';
 
-const SAVE_FILTERS_API = 'https://lc1-user-settings-service.herokuapp.com/saved-searches';
+const RSS_LINK = 'http://feeds.topcoder.com/challenges/feed?list=active&contestType=all';
 
 class SideBarFilters extends React.Component {
 
   constructor(props) {
     super(props);
-    let that = this;
-    let myFilters = localStorage.filters ? JSON.parse(localStorage.filters) : [];
-    try {
-      myFilters = myFilters.map(item => new SideBarFilter(item));
-    } catch (e) {
-      // Ooops, serialization format for custom filters has changed, we cannot
-      // load filters stored in the local storage. Thus, we clear the storage,
-      // forget about all previously saved filters.
-      // TODO: Probably, some smarter way of tracking serialization format version
-      // should be implemented, as we move closer to the final release?
-      myFilters = [];
-      localStorage.filters = '';
-    }
+
+    // TODO: Get the auth token from cookie for now.
+    // Ideally the token should be passed in from a parent container component
+    // http://stackoverflow.com/questions/5639346/
+    const token = document.cookie.match(`(^|;)\\s*${TOKEN_KEY}\\s*=\\s*([^;]+)`);
+    const authToken = token ? token.pop() : '';
     this.state = {
+      authToken,
       currentFilter: DEFAULT_FILTERS[3],
-      filters: _.clone(DEFAULT_FILTERS).concat(myFilters),
+      filters: _.clone(DEFAULT_FILTERS),
       mode: MODES.SELECT_FILTER,
     };
 
@@ -113,12 +104,63 @@ class SideBarFilters extends React.Component {
     // A fancy staff: if the parent has passed a filter, which does not exists
     // (it is taken from a deep link), we add it to the list of filters and
     // also select it.
-    const f = new SideBarFilter(props.filter);
-    f.count = props.challenges.filter(f.getFilterFunction()).length;
-    this.state.currentFilter = f;
-    this.state.filters.push(f);
+    // if the filter is one of the default filters then 
+    // select it by default. We check on name and assume that 
+    // a custom filter will never be named the same as a default filter.
+    if (_.values(MODE).includes(props.filter.name)) {
+      this.state.currentFilter = DEFAULT_FILTERS[_.values(MODE).indexOf(props.filter.name)]
+    }
+    else {
+      const f = new SideBarFilter(props.filter);
+      f.count = props.challenges.filter(f.getFilterFunction()).length;
+      this.state.currentFilter = f;
+      this.state.filters.push(f);
+    }
   }
 
+  static domainFromUrl(url) {
+    // if MAIN_URL is not defined or null return default domain (production)
+    if(url == null) {
+      return "topcoder.com";
+    }
+    const firstSlashIndex = url.indexOf("/");
+    const secondSlashIndex = url.indexOf("/", firstSlashIndex+1);
+    const fullDomainName = url.slice(secondSlashIndex+1);
+    const lastDotIndex = fullDomainName.lastIndexOf(".");
+    const secondLastDotIndex = fullDomainName.lastIndexOf(".", lastDotIndex-1);
+    if(secondLastDotIndex === -1) {
+      return fullDomainName;
+    }
+    else {
+      return fullDomainName.slice(secondLastDotIndex+1, fullDomainName.length);
+    }
+  }
+
+  /**
+   * Retrieve the saved filters for a logged in user.
+   */
+  componentDidMount() {
+    if (this.state.authToken) {
+      fetch(SAVE_FILTERS_API, {
+        headers: {
+          Authorization: `Bearer ${this.state.authToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(res => res.json())
+        .then((data) => {
+          const myFilters = data.map((item) => {
+            const filter = item;
+            filter.isSavedFilter = true;
+            filter.isCustomFilter = true;
+            return new SideBarFilter(filter);
+          });
+          this.setState({
+            filters: this.state.filters.concat(myFilters),
+          });
+        });
+    }
+  }
   /**
    * When a new array of challenges is passed from the parent component via props,
    * this method updates counters of challenges matching each of the filters in
@@ -133,6 +175,16 @@ class SideBarFilters extends React.Component {
       filterClone.count = nextProps.challenges.filter(filter.getFilterFunction()).length;
       filters.push(filterClone);
     });
+    for (let i = 0; i < filters.length; i += 1) {
+      if (filters[i].mode === 'All Challenges') {
+        filters[i].count = 0;
+        for (let j = 0; j < filters.length; j += 1) {
+          if (filters[j].mode === 'Open for registration' || filters[j].mode === 'Ongoing challenges') {
+            filters[i].count += filters[j].count;
+          }
+        }
+      }
+    }
     this.setState({
       currentFilter,
       filters,
@@ -182,6 +234,7 @@ class SideBarFilters extends React.Component {
    */
   addFilter(filter) {
     const f = (new SideBarFilter(MODE.CUSTOM)).merge(filter);
+    f.uuid = uuid();
     const filters = _.clone(this.state.filters);
     f.count = this.props.challenges.filter(f.getFilterFunction()).length;
     filters.push(f);
@@ -193,10 +246,12 @@ class SideBarFilters extends React.Component {
    * Renders the component in the Edit My Filters mode.
    */
   editMyFiltersMode() {
+    const domain = SideBarFilters.domainFromUrl(this.props.config.MAIN_URL);
     return (
       <div className="SideBarFilters" ref={ref => this.props.ref(ref)}>
         <div className="FilterBox">
           <EditMyFilters
+            token={this.state.authToken}
             filters={this.state.filters.slice(FILTER_ID.FIRST_USER_DEFINED)}
             onDone={(myFilters) => {
               const filters = _.clone(this.state.filters).slice(0, FILTER_ID.FIRST_USER_DEFINED);
@@ -204,43 +259,84 @@ class SideBarFilters extends React.Component {
                 filters: filters.concat(myFilters),
                 mode: MODES.SELECT_FILTER,
               });
-              this.saveFilters(myFilters);
+              this.updateFilters(myFilters);
             }}
           />
-          </div>
-          <div className="sidebar-footer">
-            <ul>
-              <li><a href="javascript:;">About</a>&nbsp;•&nbsp;</li>
-              <li><a href="javascript:;">Contact</a>&nbsp;•&nbsp;</li>
-              <li><a href="javascript:;">Help</a>&nbsp;•&nbsp;</li>
-              <li><a href="javascript:;">Privacy</a>&nbsp;•&nbsp;</li>
-              <li><a href="javascript:;">Terms</a></li>
-            </ul>
-            <p className="copyright">Topcoder © 2016.</p>
-          </div>
+        </div>
+        <div className="sidebar-footer">
+          <ul>
+            <li><a href={`https://www.${domain}/about`}>About</a>&nbsp;•&nbsp;</li>
+            <li><a href={`https://help.${domain}/hc/en-us/articles/219069687-Contact-Support`}>Contact</a>&nbsp;•&nbsp;</li>
+            <li><a href={`https://help.${domain}`}>Help</a>&nbsp;•&nbsp;</li>
+            <li><a href={`https://www.${domain}/community/how-it-works/privacy-policy/`}>Privacy</a>&nbsp;•&nbsp;</li>
+            <li><a href={`https://www.${domain}/community/how-it-works/terms/`}>Terms</a></li>
+          </ul>
+          <p className="copyright">Topcoder © 2017.</p>
+        </div>
       </div>
     );
   }
 
+/**
+ * Updates already saved filters on the backend.
+ * Used to update name of the filter but can be used to update
+ * other properties if needed.
+ */
+  updateFilters(filters) {
+    // For each filter in filters, serialize it and then
+    // make a fetch PUT request
+    // there is no need to do anything with the response
+    filters.forEach((filter) => {
+      fetch(`${SAVE_FILTERS_API}/${filter.uuid}`, {
+        headers: {
+          Authorization: `Bearer ${this.state.authToken}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'PUT',
+        body: JSON.stringify({
+          name: filter.name,
+          filter: filter.getURLEncoded(),
+          // TODO: The saved-search API requires type to be one of develop, design,
+          // or data. As this is not consistent with the frontend functionality, the API
+          // needs to be updated in future, till then we use hardcoded 'develop'.
+          type: 'develop',
+        }),
+      });
+    });
+  }
   /**
-   * Saves My Filters to a permanent storage. Will be the backend in future,
-   * but for now it stores in the browser's localStorage.
+   * Saves My Filters to the backend
    */
   saveFilters(filters) {
-    // TODO: In theory, this code should save the stringified representation of
-    // the filters to the remote server. In practice, we cannot test it, as the
-    // development version of the save filters endpoint is down, and we cannot
-    // test against the production one, as production authentication system
-    // rejects to authenicate a locally deployed App.
+    // This code saves the stringified representation of
+    // the filters to the remote server.
+    const [filter] = _.takeRight(filters);
+
     fetch(SAVE_FILTERS_API, {
       headers: {
-        Authorization: `Bearer ${this.tcjwt}`,
+        Authorization: `Bearer ${this.state.authToken}`,
+        'Content-Type': 'application/json',
       },
       method: 'POST',
-      body: JSON.stringify(JSON.stringify(filters.map(item => item.stringify()))),
-    }).catch(() => {
-      // As the fallback, we save filters to the browser's local storage.
-      localStorage.filters = JSON.stringify(filters.map(item => item.stringify()));
+      body: JSON.stringify({
+        name: this.getAvailableFilterName(),
+        filter: filter.getURLEncoded(),
+        // The saved-search API requires type to be one of develop, design,
+        // or data. We are using the filter property to store tracks info and passing
+        // in type as develop just to keep the backend happy.
+        type: 'develop',
+      }),
+    })
+    .then(res => res.json())
+    .then((res) => {
+      // Replace the SideBarFilter object created at the client side with a new
+      // SideBarFilter object which has correct id from the server response.
+      const updatedFilters = this.state.filters.filter(e => e.uuid !== filter.uuid);
+      const savedFilter = res;
+      savedFilter.isSavedFilter = true;
+      savedFilter.isCustomFilter = true;
+      updatedFilters.push(new SideBarFilter(savedFilter));
+      this.setState({ filters: updatedFilters });
     });
   }
 
@@ -254,34 +350,35 @@ class SideBarFilters extends React.Component {
       <FilterItem
         count={filter.count}
         highlighted={filter === this.state.currentFilter}
-        key={index}
+        myFilter={index >= FILTER_ID.FIRST_USER_DEFINED}
+        key={`${filter.name}-filter`}
         name={filter.name}
         onClick={() => this.selectFilter(index)}
       />
     ));
     const myFilters = filters.slice(FILTER_ID.FIRST_USER_DEFINED);
+    const domain = SideBarFilters.domainFromUrl(this.props.config.MAIN_URL);
     return (
       <div className="SideBarFilters" ref={ref => this.props.ref(ref)}>
         <div className="FilterBox">
           {filters[FILTER_ID.ALL_CHALLENGES]}
 
-          {this.props.isAuth ?<span><hr /> {filters[FILTER_ID.MY_CHALLENGES]}</span> : ''}
-          <hr />
+          {this.props.isAuth ?<span> {filters[FILTER_ID.MY_CHALLENGES]}</span> : ''}
           {filters[FILTER_ID.OPEN_FOR_REGISTRATION]}
           {filters[FILTER_ID.ONGOING_CHALLENGES]}
-          {filters[FILTER_ID.PAST_CHALLENGES]}
           {filters[FILTER_ID.OPEN_FOR_REVIEW]}
+          <hr />
+          {filters[FILTER_ID.PAST_CHALLENGES]}
           {
             myFilters.length ?
               <div>
-                <hr />
                 <div className="my-filters">
                   <h1>My filters</h1>
-                  <a 
+                  <a
                     className="edit-link"
-                    href="javascript:;"
                     onClick={() => {
                       this.setState({ mode: MODES.EDIT_MY_FILTERS });
+                      return false;
                     }}
                   >
                     edit
@@ -290,27 +387,50 @@ class SideBarFilters extends React.Component {
                 {myFilters}
               </div> : ''
           }
+          <hr />
+          <div className="get-rss">
+            <a href={RSS_LINK}>Get the RSS feed</a>
+          </div>
         </div>
         <div className="sidebar-footer">
           <ul>
-            <li><a href="javascript:;">About</a>&nbsp;•&nbsp;</li>
-            <li><a href="javascript:;">Contact</a>&nbsp;•&nbsp;</li>
-            <li><a href="javascript:;">Help</a>&nbsp;•&nbsp;</li>
-            <li><a href="javascript:;">Privacy</a>&nbsp;•&nbsp;</li>
-            <li><a href="javascript:;">Terms</a>&nbsp;•&nbsp;</li>
-            <li><a href="javascript:;">Get the RSS</a></li>
+            <li><a href={`https://www.${domain}/about`}>About</a>&nbsp;•&nbsp;</li>
+            <li><a href={`https://help.${domain}/hc/en-us/articles/219069687-Contact-Support`}>Contact</a>&nbsp;•&nbsp;</li>
+            <li><a href={`https://help.${domain}`}>Help</a>&nbsp;•&nbsp;</li>
+            <li><a href={`https://www.${domain}/community/how-it-works/privacy-policy/`}>Privacy</a>&nbsp;•&nbsp;</li>
+            <li><a href={`https://www.${domain}/community/how-it-works/terms/`}>Terms</a></li>
           </ul>
-          <p className="copyright">Topcoder © 2016.</p>
+          <p className="copyright">Topcoder © 2017</p>
         </div>
       </div>
     );
   }
 
   /**
-   * Selects the filter with the specified ID.
+   * Selects the filter with the specified index.
    */
-  selectFilter(id) {
-    const currentFilter = this.state.filters[id];
+  selectFilter(index) {
+    if (this.state.filters[index].mode === 'Open for review') {
+      // Jump to Development Review Opportunities page
+      window.location.href = `${this.props.config.MAIN_URL}/review/development-review-opportunities/`;
+    }
+    else {
+      const currentFilter = this.state.filters[index];
+      this.setState({ currentFilter }, () => this.props.onFilter(currentFilter));
+    }
+  }
+
+  /**
+   * Selects the filter with the specified name.
+   */
+  selectFilterWithName(filterName) {
+    // find a filter with matching name
+    const currentFilter = _.find(this.state.filters, filter => filter.name === filterName);
+    if (currentFilter.mode === "Open for review") {
+      // Jump to Development Review Opportunities page
+      window.location.href = `${this.props.config.MAIN_URL}/review/development-review-opportunities/`;
+      return;
+    }
     this.setState({ currentFilter }, () => this.props.onFilter(currentFilter));
   }
 
@@ -328,8 +448,12 @@ class SideBarFilters extends React.Component {
 
 SideBarFilters.defaultProps = {
   filter: new SideBarFilter(MODE.ALL_CHALLENGES),
+  isAuth: false,
   onFilter: _.noop,
   ref: _.noop,
+  config: {
+    MAIN_URL: '',
+  },
 };
 
 SideBarFilters.propTypes = {
@@ -338,7 +462,11 @@ SideBarFilters.propTypes = {
   })).isRequired,
   filter: PT.instanceOf(SideBarFilter),
   onFilter: PT.func,
+  isAuth: PT.bool,
   ref: PT.func,
+  config: PT.shape({
+    MAIN_URL: PT.string,
+  }),
 };
 
 export default SideBarFilters;

@@ -1,13 +1,19 @@
-import React from 'react';
-import SidebarRow from './SidebarRow/SidebarRow';
-require('./ChallengesSidebar.scss');
+/* global
+  JSON
+*/
+
+import React from 'react'
+import SidebarRow from './SidebarRow/SidebarRow'
+import './ChallengesSidebar.scss'
+
+const { object } = React.PropTypes
 
 const ChallengesSidebar = ({ SidebarMock }) => {
   const all = () => {
     return(
       <SidebarRow>
-        <p className={"l-row"}>{SidebarMock.all.name}</p>
-        <p className={"r-row"}>{SidebarMock.all.value}</p>
+        <p className={'l-row'}>{SidebarMock.all.name}</p>
+        <p className={'r-row'}>{SidebarMock.all.value}</p>
       </SidebarRow>
     )
   }
@@ -15,26 +21,26 @@ const ChallengesSidebar = ({ SidebarMock }) => {
   const myChallenges = () => {
     return(
       <SidebarRow>
-        <p className={"l-row"}>{SidebarMock.myChallenges.name}</p>
-        <p className={"r-row"}>{SidebarMock.myChallenges.value}</p>
+        <p className={'l-row'}>{SidebarMock.myChallenges.name}</p>
+        <p className={'r-row'}>{SidebarMock.myChallenges.value}</p>
       </SidebarRow>
     )
   }
 
-  const others = SidebarMock.others.map((other, index) => {
+  const others = SidebarMock.others.map((other) => {
     return (
-      <SidebarRow key={index}>
-        <p className={"l-row"}>{other.name}</p>
-        <p className={"r-row"}>{other.value}</p>
+      <SidebarRow key={JSON.stringify(other)}>
+        <p className={'l-row'}>{other.name}</p>
+        <p className={'r-row'}>{other.value}</p>
       </SidebarRow>
     )
   })
 
-  const myFilters = SidebarMock.myFilters.map((other, index) => {
+  const myFilters = SidebarMock.myFilters.map((other) => {
     return (
-      <SidebarRow key={index}>
-        <p className={"l-row"}>{other.name}</p>
-        <p className={"r-row"}>{other.value}</p>
+      <SidebarRow key={JSON.stringify(other)}>
+        <p className={'l-row'}>{other.name}</p>
+        <p className={'r-row'}>{other.value}</p>
       </SidebarRow>
     )
   })
@@ -57,8 +63,8 @@ const ChallengesSidebar = ({ SidebarMock }) => {
         <div className="challenges">
           <div className="filters">
             <SidebarRow>
-              <p className={"l-row"}>MY FILTERS</p>
-              <p className={"r-row"}><a href="javascript:;">edit</a></p>
+              <p className={'l-row'}>MY FILTERS</p>
+              <p className={'r-row'}><a href="javascript:;">edit</a></p>
             </SidebarRow>
           </div>
           {myFilters}
@@ -66,17 +72,24 @@ const ChallengesSidebar = ({ SidebarMock }) => {
       </div>
       <div className="sidebar-footer">
         <ul>
-          <li><a href="javascript:;">About</a>&nbsp;•&nbsp;</li>
-          <li><a href="javascript:;">Contact</a>&nbsp;•&nbsp;</li>
-          <li><a href="javascript:;">Help</a>&nbsp;•&nbsp;</li>
-          <li><a href="javascript:;">Privacy</a>&nbsp;•&nbsp;</li>
-          <li><a href="javascript:;">Terms</a>&nbsp;•&nbsp;</li>
-          <li><a href="javascript:;">Get the RSS</a></li>
+          <li><a href="/about">About</a>&nbsp;•&nbsp;</li>
+          <li><a href="https://help.topcoder.com/hc/en-us/articles/219069687-Contact-Support">Contact</a>&nbsp;•&nbsp;</li>
+          <li><a href="https://help.topcoder.com/">Help</a>&nbsp;•&nbsp;</li>
+          <li><a href="/community/how-it-works/privacy-policy/">Privacy</a>&nbsp;•&nbsp;</li>
+          <li><a href="/community/how-it-works/terms/">Terms</a>&nbsp;•&nbsp;</li>
         </ul>
-        <p className="copyright">Topcoder © 2016.</p>
+        <p className="copyright">Topcoder © 2017.</p>
       </div>
     </div>
   )
 }
 
-export default ChallengesSidebar;
+ChallengesSidebar.defaultProps = {
+  SidebarMock: undefined,
+}
+
+ChallengesSidebar.propTypes = {
+  SidebarMock: object,
+}
+
+export default ChallengesSidebar

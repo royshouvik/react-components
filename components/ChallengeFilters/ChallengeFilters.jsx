@@ -56,8 +56,23 @@ class ChallengeFilters extends React.Component {
       filter: props.filter,
       filtersCount: props.filter.count(),
       showFilters: false,
-      showEditTrackPanel: false, 
+      showEditTrackPanel: false,
     };
+    this.searchBarProps = {
+      placeholder: "Search Challenges",
+    };
+    if (props.searchQuery) {
+      this.searchBarProps.query = props.searchQuery;
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.filter !== nextProps.filter) {
+      this.setState({
+        filter: nextProps.filter,
+        filtersCount: nextProps.filter.count(),
+      });
+    }
   }
 
   /**
@@ -154,7 +169,7 @@ class ChallengeFilters extends React.Component {
           />
           <ChallengeSearchBar
             onSearch={str => this.onSearch(str)}
-            placeholder="Search Challenges"
+            {...this.searchBarProps}
           />
           {
             this.props.isCardTypeSet === 'Challenges' ?
@@ -188,8 +203,8 @@ class ChallengeFilters extends React.Component {
                 </span>
               ) : ''
             }
-            <span 
-              onClick={() => this.toggleShowFilters()} 
+            <span
+              onClick={() => this.toggleShowFilters()}
               className="filter-btn"
             >
               <FiltersIcon color="#737380" />
@@ -216,7 +231,7 @@ class ChallengeFilters extends React.Component {
 
         <EditTrackPanel
           opened={this.state.showEditTrackPanel}
-          onClose={this.toggleEditTrackPanel.bind(this)}
+          onClose={() => this.toggleEditTrackPanel()}
           designEnabled={this.state.filter.tracks.has(DESIGN_TRACK)}
           switchDesign={enable => this.setTracks(DESIGN_TRACK, enable)}
           devEnabled={this.state.filter.tracks.has(DEVELOP_TRACK)}
@@ -237,6 +252,7 @@ const TagShape = PT.shape({
 ChallengeFilters.defaultProps = {
   filter: new ChallengeFilter(),
   isCardTypeSet: '',
+  searchQuery: '',
   onFilter: _.noop,
   onSaveFilter: _.noop,
   onSearch: _.noop,
@@ -247,6 +263,7 @@ ChallengeFilters.defaultProps = {
 ChallengeFilters.propTypes = {
   filter: PT.instanceOf(ChallengeFilter),
   isCardTypeSet: PT.string,
+  searchQuery: PT.string,
   onFilter: PT.func,
   onSearch: PT.func,
   onSaveFilter: PT.func,

@@ -1,3 +1,9 @@
+/* global
+  atob, btoa
+*/
+
+/* eslint constructor-super: 0 */  // line 63 need that super in the catch block
+
 /**
  * The SideBarFilter extends the ChallengeFilter from the ChallengeFilters
  * component. This way any ChallengeFilter can be easily added to the sidebar.
@@ -19,6 +25,7 @@ export const MODE = {
   CUSTOM: 'custom',
 };
 
+
 class SideBarFilter extends ChallengeFilter {
 
   // In addition to the standard arguments accepted by all parent filter classes,
@@ -29,9 +36,19 @@ class SideBarFilter extends ChallengeFilter {
       this.mode = MODE.ALL_CHALLENGES;
       this.name = MODE.ALL_CHALLENGES;
       this.uuid = MODE.ALL_CHALLENGES;
+    } else if (arg.isSavedFilter) {
+      super(arg);
+      this.isCustomFilter = arg.isCustomFilter;
+      const mode = arg.filter.split('&').filter(ele => ele.startsWith('mode='))[0];
+      const name = arg.filter.split('&').filter(ele => ele.startsWith('name='))[0];
+      const modes = Object.keys(MODE).map((key) => MODE[key]);
+      this.mode = mode ? modes[+mode.split('=')[1]] : MODE.CUSTOM;
+      this.name = arg.name || (name ? decodeURIComponent(name.split('=')[1]) : name) || 'Custom';
+      this.uuid = arg.id || uuid();
     } else if (_.isObject(arg)) {
       if (!arg._isSideBarFilter) throw new Error('Invalid argument!');
       super(arg);
+      this.isCustomFilter = arg.isCustomFilter;
       this.mode = _.clone(arg.mode);
       this.name = _.clone(arg.name);
       this.uuid = _.clone(arg.uuid);
@@ -64,8 +81,8 @@ class SideBarFilter extends ChallengeFilter {
       case MODE.OPEN_FOR_REVIEW: return item => item.currentPhaseName === 'Review';
       // The API has some incosistencies in the challenge items
       // thus we have to check all fields that define a challenges as 'Open for registration'
-      case MODE.OPEN_FOR_REGISTRATION: return item => item.currentPhaseName
-        && item.currentPhaseName.startsWith('Registration')
+      case MODE.OPEN_FOR_REGISTRATION: return item => (item.currentPhaseName
+        && (item.currentPhaseName.startsWith('Registration') || item.challengeType.startsWith('Marathon')))
         && !item.status.startsWith('Completed')
         && item.registrationOpen.startsWith('Yes');
       case MODE.ONGOING_CHALLENGES:
@@ -92,6 +109,17 @@ class SideBarFilter extends ChallengeFilter {
       this.name,
       this.uuid,
     ]));
+  }
+
+ /**
+ * Get an URL Encoded string representation of the filter.
+ * Used for saving to the backend and displaying on the URL for deep linking.
+ */
+  getURLEncoded() {
+    const modes = Object.keys(MODE).map((key) => MODE[key]);
+    const mode = `&mode=${modes.indexOf(this.mode)}`;
+    const name = `&name=${this.name}`;
+    return `${super.getURLEncoded()}${mode}${name}`;
   }
 }
 
