@@ -10,11 +10,9 @@
  * the input field.
  */
 
-import React from 'react';
 import './ChallengeSearchBar.scss';
-import zoomIcon from './ui-zoom.svg';
 
-const { func, string } = React.PropTypes;
+import React from 'react';
 
 class ChallengeSearchBar extends React.Component {
 
@@ -23,18 +21,11 @@ class ChallengeSearchBar extends React.Component {
     this.state = {
       value: '',
     };
-    if (this.props.query) {
-      this.state.value = this.props.query;
-      this.onSearch();
-    }
   }
 
   onKeyPress(event) {
     switch (event.key) {
-      case 'Enter':
-        return this.onSearch();
-      default:
-        return null;
+      case 'Enter': return this.onSearch();
     }
   }
 
@@ -52,28 +43,12 @@ class ChallengeSearchBar extends React.Component {
           type="text"
           value={this.state.value}
         />
-        <span
-          id="SearchButton"
-          className={this.state.value ? 'active' : ''}
-          onClick={() => this.onSearch()}
-        >
-          <img src={zoomIcon} />
+        <span id="SearchButton" onClick={() => this.onSearch()} >
+          <img src={require('./ui-zoom.svg')} />
         </span>
       </div>
     );
   }
 }
-
-ChallengeSearchBar.defaultProps = {
-  onSearch: () => true,
-  placeholder: '',
-  query: '',
-};
-
-ChallengeSearchBar.propTypes = {
-  onSearch: func,
-  placeholder: string,
-  query: string,
-};
 
 export default ChallengeSearchBar;

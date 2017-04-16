@@ -7,12 +7,11 @@
  * the 'user' prop.
  */
 
-import React, { Component, PropTypes as PT } from 'react';
-// import moment from 'moment';
+import React, { PropTypes as PT } from 'react';
+import moment from 'moment';
 import Tooltip from '../Tooltip';
 import './UserAvatarTooltip.scss';
 
-const MOCK_PHOTO = 'https://acrobatusers.com/assets/images/template/author_generic.jpg';
 /**
  * Renders the tooltip's content.
  * It includes: user profile picture, handle, his country and the TC registration
@@ -22,27 +21,17 @@ const MOCK_PHOTO = 'https://acrobatusers.com/assets/images/template/author_gener
  * efficient way to query those.
  */
 function Tip(props) {
-  /* const joined = moment(props.user.memberSince).format('MMM YYYY');
+  const joined = moment(props.user.memberSince).format('MMM YYYY');
   const rating = props.user.ratingSummary.map(item => (
     <span className="rating" key={item.name}>
       <span>{item.name}</span>
       <span>{item.rating}</span>
     </span>
-  ));*/
-  const { photoLink } = props.user;
-  const src = photoLink.startsWith('https') ? photoLink : `https://topcoder.com/${photoLink}`;
-
+  ));
   return (
     <div>
-      <img
-        alt="User avatar"
-        className="avatar"
-        src={src}
-        onError={props.handleError}
-      />
+      <img alt="User avatar" className="avatar" src={`https://topcoder.com${props.user.photoLink}`} />
       <div className="handle">{props.user.handle}</div>
-      {/* Below block is commented out as it's not possible to get this information
-      // as of now.
       <div className="info">
         <span className="country">{props.user.country}</span>
         <span className="wins">&nbsp;<span className="separtor">/</span> 257 wins&nbsp;</span>
@@ -51,13 +40,12 @@ function Tip(props) {
       <div className="achievements">
         <h3>Ratings</h3>
         {rating}
-      </div> */}
+      </div>
     </div>
   );
 }
 
 Tip.propTypes = {
-  handleError: PT.func.isRequired,
   user: PT.shape({
     country: PT.string,
     handle: PT.string,
@@ -70,28 +58,13 @@ Tip.propTypes = {
 /**
  * Renders the tooltip.
  */
-class UserAvatarTooltip extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      user: props.user,
-    };
-    this.handleError = this.handleError.bind(this);
-  }
-  handleError() {
-    const user = this.state.user;
-    user.photoLink = MOCK_PHOTO;
-    this.setState({ user });
-  }
-
-  render() {
-    const tip = <Tip user={this.state.user} handleError={this.handleError} />;
-    return (
-      <Tooltip className="user-avatar-tooltip" content={tip}>
-        {this.props.children}
-      </Tooltip>
-    );
-  }
+function UserAvatarTooltip(props) {
+  const tip = <Tip user={props.user} />;
+  return (
+    <Tooltip className="user-avatar-tooltip" content={tip}>
+      {props.children}
+    </Tooltip>
+  );
 }
 
 UserAvatarTooltip.defaultProps = {

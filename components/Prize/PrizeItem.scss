@@ -1,5 +1,12 @@
 @import 'topcoder/tc-includes';
-@import '../../styles/tc-styles';
+
+$gold: #FFD900;
+$silver: #A9BCD4;
+$bronze: #BD731E;
+$gray-30:  #C3C3C8;
+$gray: #47474F;
+$purple: #B47DD6;
+$accent: #59A7FF;
 
 .TaggedValue {
   display:inline-block;
@@ -10,7 +17,7 @@
     font-family: "Roboto", Arial, Helvetica, sans-serif;
     font-size: 13px;
     line-height: 15px;
-    color: $tc-white;
+    color: $white;
     font-weight: 500;
   }
   .tagged-value-bg{
@@ -18,14 +25,14 @@
     padding: 1px 4px 1px 4px;
     min-width: 15px;
     max-height: 15px;
-    background: $tc-gray-30;
+    background: $gray-30;
     border-radius: 8px;
     text-align: center;
     font-size: 11px;
     line-height: 13px;
     font-family: "Roboto-Black", Arial, Helvetica, sans-serif;
     font-weight: bold;
-    color:  $tc-gray-80;
+    color:  $gray;
   }
 
 }
@@ -33,18 +40,18 @@
 .prize {
   .TaggedValue:nth-child(1) {
     .tagged-value-bg {
-      background: $tc-gold;
+      background: $gold;
     }
   }
   .TaggedValue:nth-child(2) {
     .tagged-value-bg {
-        background: $tc-silver;
+        background: $silver;
     }
   }
 
   .TaggedValue:nth-child(3) {
     .tagged-value-bg {
-        background: $tc-bronze;
+        background: $bronze;
     }
   }
 }
@@ -52,18 +59,18 @@
 .bonus {
   .TaggedValue:nth-child(1) {
     .tagged-value-bg {
-      background: $tc-purple;
+      background: $purple;
     }
   }
   .TaggedValue:nth-child(2) {
     .tagged-value-bg {
-        background: $tc-purple;
+        background: $purple;
     }
   }
 
   .TaggedValue:nth-child(3) {
     .tagged-value-bg {
-        background: $tc-accent;
+        background: $accent;
     }
   }
 }
@@ -74,7 +81,7 @@
     font-weight: bold;
     font-size: 15px;
     line-height: 18px;
-    color: $tc-white;
+    color: $white;
   }
   .items {
     margin-top: 10px;

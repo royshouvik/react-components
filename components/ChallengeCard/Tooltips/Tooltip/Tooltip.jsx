@@ -1,7 +1,3 @@
-/* global
-  window
-*/
-
 /**
  * Tooltip component.
  *
@@ -34,12 +30,13 @@ class Tooltip extends React.Component {
   }
 
   showTooltip() {
-    if (window.innerWidth < 768) {
-      this.tooltip.hide();
-    } else {
+    if(window.innerWidth < 768) {
+      this.tooltip.hide()
+    }
+    else {
       this.tooltip.position(this.wrapper).show();
-      if (this.props.onTooltipHover) {
-        this.props.onTooltipHover();
+      if(this.props.onTooltipHover) {
+        this.props.onTooltipHover()
       }
     }
   }
@@ -47,7 +44,6 @@ class Tooltip extends React.Component {
   render() {
     return (
       <span
-        onMouseOver={() => this.showTooltip()}
         onMouseEnter={() => this.showTooltip()}
         onMouseLeave={() => this.hideTooltip()}
         ref={(node) => { this.wrapper = node; }}
@@ -68,14 +64,12 @@ class Tooltip extends React.Component {
 Tooltip.defaultProps = {
   className: '',
   content: 'TOOLTIP',
-  onTooltipHover: undefined,
 };
 
 Tooltip.propTypes = {
   children: PT.node.isRequired,
   className: PT.string,
   content: PT.node,
-  onTooltipHover: PT.func,
 };
 
 export default Tooltip;

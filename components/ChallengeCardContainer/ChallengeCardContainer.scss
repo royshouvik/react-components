@@ -2,16 +2,11 @@
 @import 'topcoder/tc-includes';
 
 .challengeCardContainer {
-  border-radius: $corner-radius;
-  width: 70%;
-  padding: 0 $base-unit;
-  @include xs-to-sm {
-    width: 100%;
-    padding: 0 $base-unit + 5;
-  }
+
   .category-challenges-container {
+    border-radius: 4px;
     background: $tc-gray-neutral-light;
-    margin: 20px 0;
+    margin-bottom: 20px;
   }
 
   .view-more {
@@ -22,12 +17,10 @@
     border-left: 0;
     border-right: 0;
     color: $tc-gray-50;
-    font-weight: 300;
+    font-weight: 500;
     text-transform: none;
     border-radius: 0;
     outline: none;
-    font-size: 13px;
-    padding: 12px 0;
   }
 
   .loading {
@@ -36,7 +29,7 @@
     color: $tc-white;
     width: 100%;
     text-align: center;
-    padding-top: $base-unit;
+    padding-top: 5px;
     margin: 0;
   }
 }
