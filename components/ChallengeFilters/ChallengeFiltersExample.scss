@@ -38,7 +38,7 @@ $challenge-radius-4: $corner-radius * 2;
       padding: $base-unit * 2 $base-unit * 4;
       font-family: 'Roboto';
       font-weight: 500;
-      background: $tc-gray-neutral-light;
+      background: #FAFAFB;
       border-top-left-radius: $corner-radius * 2;
       border-top-right-radius: $corner-radius * 2;
       margin-top: $base-unit * 4;
@@ -48,7 +48,7 @@ $challenge-radius-4: $corner-radius * 2;
     }
   }
   .sidebar-container {
-    margin: $challenge-space-20 $challenge-space-10 $challenge-space-10;
+    margin: $challenge-space-10;
     &.xs-to-sm {
       display: none;
       @include xs-to-sm {

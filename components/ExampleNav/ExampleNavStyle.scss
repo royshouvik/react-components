@@ -1,10 +1,9 @@
 @import "work/work-includes";
-@import '../../styles/tc-styles';
 
 .ExampleNav {
   position: fixed;
   bottom: 0;
-  background-color: $tc-white;
+  background-color: #fff;
   opacity: 0.6;
 
   li {

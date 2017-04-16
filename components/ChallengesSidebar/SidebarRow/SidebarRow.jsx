@@ -1,20 +1,13 @@
-import React from 'react'
-import './SidebarRow.scss'
+import React from 'react';
 
-const { array } = React.PropTypes
+require('./SidebarRow.scss');
 
-const SidebarRow = (props) => (
-  <div className="sidebar-row">
-    {props.children}
-  </div>
-)
-
-SidebarRow.defaultProps = {
-  children: [],
+const SidebarRow = (props) => {
+  return (
+    <div className="sidebar-row">
+      {props.children}
+    </div>
+  )
 }
 
-SidebarRow.propTypes = {
-  children: array,
-}
-
-export default SidebarRow
+export default SidebarRow;

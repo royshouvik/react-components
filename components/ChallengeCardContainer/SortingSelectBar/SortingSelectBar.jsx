@@ -1,7 +1,9 @@
 import _ from 'lodash';
 import React, { Component, PropTypes as PT } from 'react';
-import Dropdown from 'react-dropdown';
+import Dropdown from 'react-dropdown'
 import './SortingSelectBar.scss';
+
+const { string, arrayOf, func } = React.PropTypes;
 
 class SortingSelectBar extends Component {
   constructor(props) {
@@ -18,8 +20,13 @@ class SortingSelectBar extends Component {
   }
 
   onSelectOption(optionName) {
+    console.log(optionName);
     this.props.onSortingSelect(optionName);
     this.setState({ selectedSortingOption: optionName });
+  }
+
+  _onSelect(optionName) {
+    console.log(optionName);
   }
 
   render() {
@@ -45,6 +52,10 @@ class SortingSelectBar extends Component {
       );
     }
 
+    // temporary dropdown options
+    const dropdownOptions = ['one', 'two', 'three'];
+    const defaultOption = dropdownOptions[0];
+
     return (
       <div className="sortingBar">
         <h1 className="title">{filterName}</h1>
@@ -52,15 +63,7 @@ class SortingSelectBar extends Component {
           <p className="view-options-toggle-container-label">
             Sort by:
           </p>
-          <Dropdown
-            options={sortingOptions}
-            onChange={optionName => this.onSelectOption(optionName.value)}
-            value={{
-              label: selectedSortingOption,
-              value: selectedSortingOption
-            }}
-            placeholder="Select an option"
-          />
+          <Dropdown options={sortingOptions} onChange={optionName => this.onSelectOption(optionName.value)} value={selectedSortingOption} placeholder="Select an option" />
         </div>
         {options}
       </div>
@@ -78,8 +81,7 @@ SortingSelectBar.defaultProps = {
 SortingSelectBar.propTypes = {
   filterName: PT.string,
   sortingOptions: PT.arrayOf(PT.string),
-  onSortingSelect: PT.func,
-  value: PT.string,
+  onSortingSelect: PT.func
 };
 
 export default SortingSelectBar;

@@ -1,5 +1,3 @@
-import EditMyFilters, { SAVE_FILTERS_API } from './EditMyFilters';
-
-export { SAVE_FILTERS_API };
+import EditMyFilters from './EditMyFilters';
 
 export default EditMyFilters;

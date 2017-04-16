@@ -110,9 +110,6 @@ $panel-radius-4: $corner-radius * 2;
     display: flex;
     align-items: center;
     margin-right: $panel-space-100 + 17;
-    @include xs-to-sm {
-      display: block;
-    }
   }
   .filter {
     display: flex;
@@ -144,16 +141,10 @@ $panel-radius-4: $corner-radius * 2;
       align-items: center;
       @include calc( width, '100% - 395px');
       margin-right: $panel-space-50;
-      @include xs-to-sm {
-        width: initial;
-      }
     }
     &#dates {
       display: inline-block;
       text-align: left;
-      @include xs-to-sm {
-        margin-top: 20px;
-      }
     }
   }
 
@@ -266,7 +257,7 @@ $panel-radius-4: $corner-radius * 2;
     font-weight: 500;
     font-size: 13px;
   }
-  .Select--multi,
+  .Select--multi, 
   .Select-value {
     background: $tc-gray-neutral-dark !important;
     border: none !important;
@@ -284,7 +275,7 @@ $panel-radius-4: $corner-radius * 2;
     .Select-value-icon {
       position: absolute;
       right: 0;
-      top: 4px;
+      top: 0;
       padding: 0 $panel-space-7;
       font-size: 14px;
       border: none;

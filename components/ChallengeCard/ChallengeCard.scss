@@ -26,7 +26,7 @@ $challenge-radius-4: $corner-radius * 2;
   &:last-child {
     border-bottom: 1px solid $tc-gray-10;
   }
-  @include xs-to-sm{
+  @include xs-to-md {
     flex-wrap: wrap;
     position: relative;
   }
@@ -85,11 +85,6 @@ $challenge-radius-4: $corner-radius * 2;
     @include xs {
       margin-right: 0;
     }
-    &.with-register-button {
-      @include sm {
-        margin-right: 180px;
-      }
-    }
     a {
       line-height: $challenge-space-20;
       @include xs {
@@ -113,16 +108,15 @@ $challenge-radius-4: $corner-radius * 2;
       display: inline-block;
       text-align: center;
       padding: 0 $base-unit + 2;
-      line-height: $challenge-space-20;
+      line-height: $challenge-space-20 - 1;
       background: $tc-gray-neutral-dark;
-      font-size: 11px;
-      font-family: 'Roboto';
-      font-weight: 500;
+      font-size: 10px;
+      font-family: 'Roboto-Bold', sans-serif;
+      font-weight: 700;
       color: $tc-gray-80;
       margin-right: $base-unit;
-      border-radius: $corner-radius + 2;
-      height: $challenge-space-20;
-      margin-bottom: 2px;
+      border-radius: $corner-radius + 1;
+      height: $challenge-space-20 - 1;
     }
     .technology:hover {
       background: $tc-dark-blue-30;
@@ -136,9 +130,9 @@ $challenge-radius-4: $corner-radius * 2;
     font-weight: 700;
     color: $prize-color;
     line-height: $challenge-space-20;
-    margin-right: $challenge-space-20;
+    margin-right: $challenge-space-40;
     min-width: $challenge-space-50 + 2;
-    @media (min-width: #{$xs-width}) and (max-width: #{$md-width - 1px}) {
+    @include xs-to-md {
       position: absolute;
       right: 0;
       top: 20px;
@@ -151,11 +145,6 @@ $challenge-radius-4: $corner-radius * 2;
       margin-top: $challenge-space-20;
       padding-left: $challenge-space-50;
       top: 0;
-    }
-    &.with-register-button {
-      @media (min-width: #{$sm-width}) and (max-width: #{$md-width - 1px}) {
-        right: 108px;
-      }
     }
     > span:first-child {
       display: inline-block;
@@ -177,7 +166,8 @@ $challenge-radius-4: $corner-radius * 2;
       background: $tc-gray-neutral-light;
       font-size: 10px;
       color: $tc-gray-70;
-      white-space: nowrap;
+      border-radius: $corner-radius + 1;
+      min-width: 70px;
       @include xs {
         margin-left: 10px;
       }

@@ -1,16 +1,28 @@
-import React from 'react'
-import SRMCard from './SRMCard.jsx'
+import React from 'react';
+import SRMCard from './SRMCard.jsx';
 
-require('./SRMCardExamples.scss')
+require('./SRMCardExamples.scss');
 
 /**
  * Base API version 3 URL
  */
-const API_V3 = 'https://api.topcoder.com/v3/srms'
+const API_V3 = `https://api.topcoder.com/v3/srms`
 
+// A mock list of SRMs side bar
+const SRMsSidebarMock = {
+  all: {name: 'All SRMs', value: 853},
+  myChallenges: {name: 'My Challenges', value: 3},
+  others: [
+    {name: 'Upcoming SRM', value: 16},
+    {name: 'Past SRM', value: 34},
+  ],
+  myFilters: [
+    {name: 'TCO Finals', value: 23},
+  ]
+}
 class SRMCardExamples extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       srmChallenges: [],
     }
@@ -25,8 +37,8 @@ class SRMCardExamples extends React.Component {
 
   render() {
     // Upcoming srms
-    let futureSRMChallenge = this.state.srmChallenges.filter((challenge) => {
-      return challenge.status === 'FUTURE'
+    let futureSRMChallenge = this.state.srmChallenges.filter(function(challenge) {
+      return challenge.status === "FUTURE"
     })
 
     futureSRMChallenge = futureSRMChallenge.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
@@ -37,11 +49,11 @@ class SRMCardExamples extends React.Component {
 
     return(
       <div className="SRMsCardExamples">
-        <div className={'tc-content-wrapper srm'}>
+        <div className={"tc-content-wrapper srm"}>
           <div className="challenges-container SRMs-container">
             {/* happening now */}
             <div className="SRMCardExamples">
-              <SRMCard category={'now'} />
+              <SRMCard category={'now'}></SRMCard>
             </div>
             {/* upcoming SRMs */}
             <div className="SRMCardExamples">
@@ -51,7 +63,7 @@ class SRMCardExamples extends React.Component {
             {/* past SRMs */}
             <div className="SRMCardExamples">
               <div className="title">Past SRMs</div>
-              <SRMCard category={'past'} />
+              <SRMCard category={'past'}></SRMCard>
             </div>
           </div>
         </div>
@@ -61,4 +73,4 @@ class SRMCardExamples extends React.Component {
 }
 
 
-export default SRMCardExamples
+export default SRMCardExamples;
