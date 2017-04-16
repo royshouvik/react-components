@@ -134,6 +134,7 @@ class ChallengeFiltersExample extends React.Component {
       });
     // callback to listings.controller.js
     props.setChallengeFilter(this);
+    this.applyKeywordFilter = this.applyKeywordFilter.bind(this);
   }
 
   /**
@@ -327,6 +328,17 @@ class ChallengeFiltersExample extends React.Component {
     this.fetchChallenges(0).then(res => this.setChallenges(0, res));
   }
 
+  /** Filters all challenges by a constant keyword filter.
+   *  Enforces an additional keyword filter to be always active,
+   * no matter what the user does at the page
+   */
+  applyKeywordFilter(challenges) {
+    const keywords = this.props.activeKeywordFilter;
+    const keywordFilter = new SideBarFilter();
+    keywordFilter.keywords = keywords;
+    return challenges.filter(keywordFilter.getFilterFunction());
+  }
+
   // ReactJS render method.
   render() {
     // TODO: This is bad code. Generation of myChallengesId array is O(N),
@@ -353,7 +365,7 @@ class ChallengeFiltersExample extends React.Component {
 
     const { filter } = this.state;
     const { name: sidebarFilterName } = filter;
-
+    challenges = this.props.activeKeywordFilter ? this.applyKeywordFilter(challenges) : challenges;
     let challengeCardContainer;
     if (filter.isCustomFilter) {
       if (currentFilter.mode === SideBarFilterModes.CUSTOM) {
@@ -556,6 +568,7 @@ ChallengeFiltersExample.defaultProps = {
   myChallenges: [],
   // challengeFilters: undefined,
   isAuth: false,
+  activeKeywordFilter: undefined,
 };
 
 ChallengeFiltersExample.propTypes = {
@@ -569,6 +582,7 @@ ChallengeFiltersExample.propTypes = {
   myChallenges: PT.array,
   // challengeFilters: PT.object,
   isAuth: PT.bool,
+  activeKeywordFilter: PT.arrayOf(PT.string),
 };
 
 export default ChallengeFiltersExample;
